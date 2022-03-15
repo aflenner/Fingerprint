@@ -5,20 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 base_folder = "/data/AirID:Globecom2020_dataset/"
-extra = "KRI_ControlledHovering_data/"
+extra = "20 Sept_ParkingLotISEC_data/"
 # extra = "20 Sept_ParkingLotISEC_data/"
 folder = base_folder + extra
-# matrix_key = 'wifi_rx_data'
-matrix_key = 'previous_matrix'
-
-files = glob.glob(folder + "*.mat")
-
-data = scipy.io.loadmat(files[0])[matrix_key]
 
 samples, labels = cr.get_airid_data(folder)
 
-cr.write_samples_to_tfr_short(samples, labels, "/data/test")
-dataset_small = cr.get_dataset_small("/data/test.tfrecords")
+# cr.write_samples_to_tfr_short(samples, labels, "/data/parkingLot")
+dataset_small = cr.get_dataset_small("/data/parkingLot.tfrecords")
+
+print(dataset_small)
+data = list(dataset_small.as_numpy_iterator())
+
 
 
 # cnt = 1
