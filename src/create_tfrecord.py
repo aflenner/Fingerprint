@@ -1,6 +1,8 @@
 import tensorflow as tf 
-from parameters.py import data_format
+from parameters import data_format
 import scipy.io 
+import glob
+import numpy as np
 
 def _bytes_feature(value):
     """Returns a bytes_list from a string / byte."""
@@ -51,3 +53,44 @@ def write_images_to_tfr_short(images, labels, filename:str="images"):
   writer.close()
   print(f"Wrote {count} elements to TFRecord")
   return count
+
+def get_airid_data(folder):
+  
+  files = glob.glob(folder + "*.mat")
+  matrix_key = 'wifi_rx_data'
+  try:
+    data = scipy.io.loadmat(files[0])[matrix_key]
+  except:
+    matrix_key = 'previous_matrix'
+    data = scipy.io.loadmat(files[0])[matrix_key]
+
+  clss = 0
+  if matrix_key == 'previous_matrix':
+    samples = []
+    labels = []
+    for file in files:
+      data = scipy.io.loadmat(file)[matrix_key]
+
+      append = file.split('/')[-1]
+
+      for row in range(data.shape[0]):
+        x = np.squeeze(data[row,:])
+        x = np.squeeze(x)
+        samplelength = 512
+        numsamples = np.int(np.floor(x.shape[0]/512))
+        sample = np.zeros((2, samplelength))
+        
+        for n in range(numsamples):
+          tmp = x[n*samplelength:(n+1)*samplelength]
+          m = np.mean(np.abs(tmp))
+          tmp = tmp/m
+          sample[0,:] = np.real(tmp)
+          sample[1,:] = np.imag(tmp)
+          samples.append(sample)
+          labels.append(clss)
+          
+      clss = clss + 1
+  else:
+    pass
+
+  return samples, labels

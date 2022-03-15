@@ -1,4 +1,4 @@
-# import create_tfrecord.py as cr 
+import create_tfrecord as cr 
 import glob
 import scipy.io
 import matplotlib.pyplot as plt
@@ -16,26 +16,27 @@ files = glob.glob(folder + "*.mat")
 data = scipy.io.loadmat(files[0])[matrix_key]
 print(data.shape)
 
-cnt = 1
-figrows = len(files)
-figcols = data.shape[0]
-for file in files:
-    data = scipy.io.loadmat(file)[matrix_key]
+samples, labels = cr.get_airid_data(folder)
+# cnt = 1
+# figrows = len(files)
+# figcols = data.shape[0]
+# for file in files:
+#     data = scipy.io.loadmat(file)[matrix_key]
 
-    append = file.split('/')[-1]
+#     append = file.split('/')[-1]
 
-    for row in range(data.shape[0]):
-        x = np.squeeze(data[row,:])
-        x = x[0:500]
-        m = np.mean(np.abs(data))
-        print(m)
-        # x = np.abs(np.fft.fftshift(np.fft.fft(x)))
-        plt.subplot(figrows, figcols, cnt)
-        plt.plot(np.real(x)/m, np.imag(x)/m, 'b*')
-        # plt.plot(x)
-        # plt.xticks([])
-        # plt.yticks([])
+#     for row in range(data.shape[0]):
+#         x = np.squeeze(data[row,:])
+#         x = x[0:500]
+#         m = np.mean(np.abs(x))
+#         print(m)
+#         # x = np.abs(np.fft.fftshift(np.fft.fft(x)))
+#         plt.subplot(figrows, figcols, cnt)
+#         plt.plot(np.real(x)/m, np.imag(x)/m, 'b*')
+#         # plt.plot(x)
+#         # plt.xticks([])
+#         # plt.yticks([])
         
-        cnt = cnt + 1
+#         cnt = cnt + 1
 
-plt.savefig('/results/controlledhovering.png')
+# plt.savefig('/results/controlledhovering.png')
