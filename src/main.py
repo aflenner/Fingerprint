@@ -1,10 +1,10 @@
-import create_tfrecord as cr 
+import create_tfrecord as cr
 import glob
 import scipy.io
 import matplotlib.pyplot as plt
 import numpy as np
 
-base_folder = "/data/AirID_Globecom2020_dataset/"
+base_folder = "/data/AirID:Globecom2020_dataset/"
 extra = "KRI_ControlledHovering_data/"
 # extra = "20 Sept_ParkingLotISEC_data/"
 folder = base_folder + extra
@@ -14,9 +14,13 @@ matrix_key = 'previous_matrix'
 files = glob.glob(folder + "*.mat")
 
 data = scipy.io.loadmat(files[0])[matrix_key]
-print(data.shape)
 
 samples, labels = cr.get_airid_data(folder)
+
+cr.write_samples_to_tfr_short(samples, labels, "/data/test")
+dataset_small = cr.get_dataset_small("/data/test.tfrecords")
+
+
 # cnt = 1
 # figrows = len(files)
 # figcols = data.shape[0]
@@ -36,7 +40,7 @@ samples, labels = cr.get_airid_data(folder)
 #         # plt.plot(x)
 #         # plt.xticks([])
 #         # plt.yticks([])
-        
+
 #         cnt = cnt + 1
 
 # plt.savefig('/results/controlledhovering.png')

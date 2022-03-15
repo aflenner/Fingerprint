@@ -1,6 +1,6 @@
-import tensorflow as tf 
+import tensorflow as tf
 from parameters import data_format
-import scipy.io 
+import scipy.io
 import glob
 import numpy as np
 
@@ -25,28 +25,29 @@ def serialize_array(array):
 def parse_single_sample(sample, label):
   #define the dictionary -- the structure -- of our single example
   data = {
-    'rows': _int64_feature(sample.shape[1]), # should be 1 or 2 - 2 for I/Q.
-    'cols': _int64_feature(sample.shape[2]),
-    'data': _float_feature(serialize_array(sample)),
+    'rows': _int64_feature(sample.shape[0]), # should be 1 or 2 - 2 for I/Q.
+    'cols': _int64_feature(sample.shape[1]),
+    'data': _bytes_feature(serialize_array(sample)),
     'transmitter': _int64_feature(label)
-  } 
+  }
   #create an Example, wrapping the single features
   out = tf.train.Example(features=tf.train.Features(feature=data))
 
   return out
 
-def write_images_to_tfr_short(images, labels, filename:str="images"):
+def write_samples_to_tfr_short(samples, labels, filename:str="images"):
   filename= filename+".tfrecords"
+  print("Writing to " + filename)
   writer = tf.io.TFRecordWriter(filename) #create a writer that'll store our data to disk
   count = 0
 
-  for index in range(len(images)):
+  for index in range(len(samples)):
 
     #get the data we want to write
-    current_image = images[index] 
+    current_sample = samples[index]
     current_label = labels[index]
 
-    out = parse_single_image(image=current_image, label=current_label)
+    out = parse_single_sample(sample=current_sample, label=current_label)
     writer.write(out.SerializeToString())
     count += 1
 
@@ -54,8 +55,37 @@ def write_images_to_tfr_short(images, labels, filename:str="images"):
   print(f"Wrote {count} elements to TFRecord")
   return count
 
+def parse_tfr_element(element):
+  #use the same structure as above; it's kinda an outline of the structure we now want to create
+  data = {
+      'rows': tf.io.FixedLenFeature([], tf.int64),
+      'cols':tf.io.FixedLenFeature([], tf.int64),
+      'data':tf.io.FixedLenFeature([], tf.string),
+      'transmitter' : tf.io.FixedLenFeature([], tf.int64),
+    }
+
+
+  content = tf.io.parse_single_example(element, data)
+
+  rows = content['rows']
+  cols = content['cols']
+  label = content['transmitter']
+  raw_signal = content['data']
+
+
+  #get our 'feature'-- our image -- and reshape it appropriately
+  feature = tf.io.parse_tensor(raw_signal, out_type=tf.float64)
+  feature = tf.reshape(feature, shape=[rows, cols])
+  return (feature, label)
+
+def get_dataset_small(filename):
+    dataset = tf.data.TFRecordDataset(filename)
+    dataset = dataset.map(parse_tfr_element)
+
+    return dataset
+
 def get_airid_data(folder):
-  
+
   files = glob.glob(folder + "*.mat")
   matrix_key = 'wifi_rx_data'
   try:
@@ -79,7 +109,7 @@ def get_airid_data(folder):
         samplelength = 512
         numsamples = np.int(np.floor(x.shape[0]/512))
         sample = np.zeros((2, samplelength))
-        
+
         for n in range(numsamples):
           tmp = x[n*samplelength:(n+1)*samplelength]
           m = np.mean(np.abs(tmp))
@@ -88,7 +118,7 @@ def get_airid_data(folder):
           sample[1,:] = np.imag(tmp)
           samples.append(sample)
           labels.append(clss)
-          
+
       clss = clss + 1
   else:
     pass
