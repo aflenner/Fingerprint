@@ -3,7 +3,7 @@ from kymatio.sklearn import Scattering1D
 import matplotlib.pyplot as plt
 import scipy.io 
 import glob
-
+# import Tensorflow as tf
 
 def generate_harmonic_signal(T, num_intervals=4, gamma=0.9, random_state=42):
     """
@@ -44,9 +44,9 @@ def calc_scattering(x):
     return Sx, meta
 
 
-T = 2 ** 13
-x = generate_harmonic_signal(T)
-print(x.shape)
+# T = 2 ** 13
+# x = generate_harmonic_signal(T)
+# print(x.shape)
 # plt.figure(figsize=(8, 2))
 # plt.plot(x)
 # plt.title("Original signal")
@@ -76,39 +76,98 @@ print(x.shape)
 # plt.title('Second-order scattering')
 # plt.savefig("/results/scattering.png")
 
-folder = "/data/AirID_Globecom2020_dataset/20 Sept_ParkingLotISEC_data/"
+base_folder = "/data/AirID_Globecom2020_dataset/"
+extra = "17Sept_KRI_data/7feetbadhovering/"
+folder = base_folder + extra
+matrix_key = 'wifi_rx_data'
+matrix_key = 'previous_matrix'
 
 files = glob.glob(folder + "*.mat")
+print(files[0])
 
-cnt = 0
-data = scipy.io.loadmat(files[0])['previous_matrix']
-x = data[0,0:2**15]
-Sx, meta = calc_scattering(x)
-order0 = np.where(meta['order'] == 0)
-order1 = np.where(meta['order'] == 1)
-order2 = np.where(meta['order'] == 2)
-Sx0 = Sx[order0][0]
-Sx1 = Sx[order1]
-Sx2 = Sx[order2]
+cnt = 1
+data = scipy.io.loadmat(files[0])[matrix_key]
+print(data)
+plt.figure()
+# for file in files:
+#     data = scipy.io.loadmat(file)[matrix_key]
+#     x = np.squeeze(data)
+#     x = np.abs(np.fft.fftshift(np.fft.fft(x)))
+#     # x = x/np.linalg.norm(x, axis=0)
+#     append = file.split('/')[-1]
+#     plt.subplot(len(files),1, cnt)
+#     # plt.plot(np.real(x), np.imag(x), 'b*')
+#     plt.plot(x)
+#     # plt.xlim([-1.1,1.1])
+#     # plt.ylim([-1.1,1.1])
+#     plt.xticks([])
+#     plt.yticks([])
+#     cnt = cnt + 1
+# plt.savefig('/results/Last_over_air_transmissionB200Txffft.png')
+figrows = len(files)
+figcols = data.shape[0]
 for file in files:
-    data = scipy.io.loadmat(file)['previous_matrix']
+    data = scipy.io.loadmat(file)[matrix_key]
+    append = file.split('/')[-1]
 
-    x = data[0,0:2**15]
-    x = np.squeeze(x)
-    Sx, meta = calc_scattering(x)
-    order0 = np.where(meta['order'] == 0)
-    order1 = np.where(meta['order'] == 1)
-    order2 = np.where(meta['order'] == 2)
+    for row in range(data.shape[0]):
+        x = np.squeeze(data[row,:])
+        x = x[1000:1500]
+        # x = np.abs(np.fft.fftshift(np.fft.fft(x)))
+        plt.subplot(figrows, figcols, cnt)
+        plt.plot(np.real(x), np.imag(x), 'b*')
+        # plt.plot(x)
+        plt.xticks([])
+        plt.yticks([])
+        
+        cnt = cnt + 1
 
-    plt.figure(figsize=(8, 8))
-    plt.subplot(3, 1, 1)
-    plt.plot(Sx[order0][0] )
-    plt.title('Zeroth-order scattering')
-    plt.subplot(3, 1, 2)
-    plt.imshow(Sx[order1] , aspect='auto')
-    plt.title('First-order scattering')
-    plt.subplot(3, 1, 3)
-    plt.imshow(Sx[order2] , aspect='auto')
-    plt.title('Second-order scattering')
-    plt.savefig("/results/scattering" + str(cnt) + ".png")
-    cnt = cnt + 1
+plt.savefig('/results/7feetbadhovering.png')
+# for file in files:
+#     data = scipy.io.loadmat(file)[matrix_key]
+
+#     x = data[1,0:2**10]
+#     x = np.squeeze(x)
+#     Sx, meta = calc_scattering(x)
+#     order0 = np.where(meta['order'] == 0)
+#     order1 = np.where(meta['order'] == 1)
+#     order2 = np.where(meta['order'] == 2)
+
+#     plt.figure(figsize=(8, 8))
+#     plt.subplot(3, 1, 1)
+#     plt.plot(np.real(x), np.imag(x), 'b*')
+#     plt.title('Zeroth-order scattering')
+#     plt.subplot(3, 1, 2)
+#     # plt.imshow(Sx[order1] , aspect='auto')
+#     plt.imshow(Sx[order1], aspect = 'auto')
+#     plt.title('First-order scattering')
+#     plt.subplot(3, 1, 3)
+#     plt.imshow(Sx[order2] , aspect='auto')
+#     plt.title('Second-order scattering')
+#     plt.savefig("/results/scattering1" + str(cnt) + ".png")
+#     cnt = cnt + 1
+
+# for file in files:
+#     data = scipy.io.loadmat(file)[matrix_key]
+
+#     x = data[2,0:2**10]
+#     x = np.squeeze(x)
+    
+#     Sx, meta = calc_scattering(x)
+#     order0 = np.where(meta['order'] == 0)
+#     order1 = np.where(meta['order'] == 1)
+#     order2 = np.where(meta['order'] == 2)
+
+#     plt.figure(figsize=(8, 8))
+#     plt.subplot(3, 1, 1)
+#     plt.plot(np.real(x), np.imag(x), 'b*')
+#     plt.title('Zeroth-order scattering')
+#     plt.subplot(3, 1, 2)
+#     # plt.imshow(Sx[order1] , aspect='auto')
+#     plt.imshow(Sx[order1], aspect='auto')
+#     plt.title('First-order scattering')
+#     plt.subplot(3, 1, 3)
+#     plt.imshow(Sx[order2] , aspect='auto')
+#     plt.title('Second-order scattering')
+#     plt.savefig("/results/scattering2" + str(cnt) + ".png")
+#     cnt = cnt + 1

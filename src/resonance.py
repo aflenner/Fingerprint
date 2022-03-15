@@ -25,13 +25,14 @@ def print_peaks(Atotal, title):
 def create_amplitude(frequencies):
     Q = 1000
     Atotal = 0*amplitude(10 + .5, Q)
-    for f in frequencies:
-        Atotal = Atotal + amplitude(f, Q)
+    for f1 in frequencies:
+        for f2 in frequencies:
+            Atotal = Atotal + amplitude(f1, Q)*amplitude(f2,Q)
 
     return Atotal
 
 numfreq = 1000
-frequencies = 10 + np.random.uniform(-0.2,1.2,numfreq)
+frequencies = 10 + np.random.uniform(-0.001,1.001,numfreq)
 AQsmall = amplitude(10+.5, 10)
 plt.figure()
 print_peaks(AQsmall, "Small Q")

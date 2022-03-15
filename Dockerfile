@@ -24,5 +24,5 @@ RUN pip3 install matplotlib
 RUN pip3 install kymatio
 RUN pip3 install sklearn
 
-CMD ["python3", "/src/scattering.py"]
+CMD ["python3", "/src/main.py"]
 # docker run -it --env="DISPLAY=$DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --gpus all --device=/dev/video0:/dev/video0 video
