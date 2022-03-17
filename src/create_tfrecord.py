@@ -6,13 +6,17 @@ import numpy as np
 
 def _bytes_feature(value):
     """Returns a bytes_list from a string / byte."""
-    if isinstance(value, type(tf.constant(0))): # if value ist tensor
+    if isinstance(value, type(tf.constant(0))): # if value is tensor
         value = value.numpy() # get value of tensor
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 def _float_feature(value):
   """Returns a floast_list from a float / double."""
   return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
+
+def _floats_feature(value):
+  """Returns a floast_list from a float / double."""
+  return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 def _int64_feature(value):
   """Returns an int64_list from a bool / enum / int / uint."""
@@ -27,11 +31,12 @@ def parse_single_sample(sample, label):
   data = {
     'rows': _int64_feature(sample.shape[0]), # should be 1 or 2 - 2 for I/Q.
     'cols': _int64_feature(sample.shape[1]),
-    'data': _bytes_feature(serialize_array(sample)),
+    'data': _floats_feature(sample),
     'transmitter': _int64_feature(label)
   }
   #create an Example, wrapping the single features
-  out = tf.train.Example(features=tf.train.Features(feature=data))
+  # out = tf.train.Example(features=tf.train.Features(feature=data))
+  out = tf.train.Example(features=tf.train.Features(feature={'data': _floats_feature(sample)}))
 
   return out
 
@@ -60,7 +65,7 @@ def parse_tfr_element(element):
   data = {
       'rows': tf.io.FixedLenFeature([], tf.int64),
       'cols':tf.io.FixedLenFeature([], tf.int64),
-      'data':tf.io.FixedLenFeature([], tf.string),
+      'data':tf.io.FixedLenFeature([], tf.float32),
       'transmitter' : tf.io.FixedLenFeature([], tf.int64),
     }
 
@@ -74,7 +79,7 @@ def parse_tfr_element(element):
 
 
   #get our 'feature'-- our image -- and reshape it appropriately
-  feature = tf.io.parse_tensor(raw_signal, out_type=tf.float64)
+  feature = tf.io.parse_tensor(raw_signal, out_type=tf.float32)
   feature = tf.reshape(feature, shape=[rows, cols])
   return (feature, label)
 
