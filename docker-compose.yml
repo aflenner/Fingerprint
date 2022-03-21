@@ -1,0 +1,9 @@
+version: "3.3"
+services:
+  test:
+    image: fingerprinting:latest
+    build: .
+    volumes:
+      - ./data:/data
+      - ./src:/src
+      - ./results:/results
