@@ -7,3 +7,4 @@ services:
       - ./data:/data
       - ./src:/src
       - ./results:/results
+      - ./checkpoints:/checkpoints
